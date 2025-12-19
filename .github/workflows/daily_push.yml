@@ -1,0 +1,46 @@
+name: IPO Daily Push
+
+on:
+  schedule:
+    # 每天北京时间 18:00 运行 (GitHub用的是UTC时间，所以是 10:00)
+    - cron: '0 10 * * *'
+  workflow_dispatch: # 允许手动点击按钮运行测试
+
+jobs:
+  run_scraper:
+    runs-on: ubuntu-latest
+    
+    # 赋予写权限，以便把历史记录提交回仓库
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run script
+        env:
+          # 把 GitHub 后台填的密码注入到脚本里
+          NEWRANK_KEY: ${{ secrets.NEWRANK_KEY }}
+          WECOM_WEBHOOK_URL: ${{ secrets.WECOM_WEBHOOK_URL }}
+        run: python main.py
+
+      - name: Commit and Push history
+        # 这一步是为了保存 history.json，防止第二天重复推送
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          
+          # 如果有 history.json 变动，才提交
+          git add pushed_history.json || true
+          git commit -m "Update push history" || true
+          git push
