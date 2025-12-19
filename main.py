@@ -12,6 +12,7 @@ WECOM_WEBHOOK_URL = os.environ.get("WECOM_WEBHOOK_URL")
 TARGETS = [
 
     {"name": "每天打个新", "account": "gh_b2c2ad92da3f"},
+    {"name": "终身投资者天威", "account": "gh_99505b0c4b83"},
 
 ]
 
